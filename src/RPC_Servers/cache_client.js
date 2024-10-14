@@ -43,7 +43,7 @@ const getData = (targetKey, targetNode) => {
 
 const deleteData = (deleteKey, targetNode) => {
     const client = getTargetChannel(targetNode)
-    const deleteCnt = client.deleteData(targetKey)
+    const deleteCnt = client.deleteData(deleteKey)
 
     return deleteCnt
 }

@@ -67,16 +67,6 @@ const deleteData = async (key) => {
     }
 }
 
-/**
- * 打印数据
- */
-const printData = () => {
-    console.log('------Data Start------')
-    console.log(`DataList: ${JSON.stringify(cache_data.dataObj)}`)
-    console.log(`DataCnt: ${cache_data.dataCnt}`)
-    console.log('-------Data end-------')
-}
-
 export {
     cache_data as CacheData,
     updateData,

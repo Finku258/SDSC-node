@@ -1,4 +1,4 @@
-import express from "express"
+import express from 'express';
 import { CacheData, updateData, searchData, deleteData } from '../Cache_Data/node_data.mjs'
 
 const app = express()

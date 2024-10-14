@@ -72,13 +72,4 @@ class Logger {
     }
 }
 
-// 示例使用
-const logger = new Logger('error');  // 设置日志级别为 'info'
-
-logger.info('This is an info message');
-logger.warn('This is a warning message');
-logger.error('This is an error message');
-logger.debug('This is a debug message');  // 因为当前日志级别是 'info'，所以不会输出
-
-// 关闭日志系统（可选）
-logger.close();
+export default new Logger('error')

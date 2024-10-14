@@ -1,0 +1,37 @@
+version: '3'
+
+
+services:
+  node1:
+    build: .
+    container_name: node1
+    ports:
+      - "9527:5000"
+    environment:
+      - NODE_ID=1
+    networks:
+      - node-networks
+
+  node2:
+    build: .
+    container_name: node2
+    ports:
+      - "9528:5000"
+    environment:
+      - NODE_ID=2
+    networks:
+      - node-networks
+
+  node3:
+    build: .
+    container_name: node3
+    ports:
+      - "9529:5000"
+    environment:
+      - NODE_ID=3
+    networks:
+      - node-networks
+
+networks:
+  node-networks:
+    driver: bridge
