@@ -1,0 +1,7 @@
+[2024-10-14T03:31:23.339Z] [INFO] This is an info message
+[2024-10-14T03:31:46.109Z] [INFO] This is an info message
+[2024-10-14T03:31:46.111Z] [WARN] This is a warning message
+[2024-10-14T03:31:46.111Z] [ERROR] This is an error message
+[10/14/2024, 11:33:12 AM] [INFO] This is an info message
+[10/14/2024, 11:33:12 AM] [WARN] This is a warning message
+[10/14/2024, 11:33:12 AM] [ERROR] This is an error message
