@@ -1,0 +1,120 @@
+# 作业内容
+
+1. 目标：完成一个简易分布式缓存系统
+2. 要求：
+   1. Cache数据以key-value形式存储在缓存系统节点**内存**中（不需要持久化）；
+   2. Cache数据以既定策略（round-robin或hash均可，不做限定）分布在不同节点（不考虑副本存储）；
+   3. 服务至少启动3个节点，**不考虑节点动态变化（即运行中无新节点加入，也无故障节点退出）**；
+      1. 所有节点均提供HTTP访问入口；
+      2. 客户端读写访问可从任意节点接入，每个请求只支持一个key存取；
+      3. 若数据所在目标存储服务器与接入服务器不同，则接入服务器需通过内部RPC向目标存储服务器发起相同操作请求，并将目标服务器结果返回客户端。
+   4. 暂时无法在成电飞书文档外展示此内容
+
+   5. HTTP API约定
+      1. Content-type: application/json; charset=utf-8
+      2. 写入/更新缓存：`POST /`。使用HTTP POST方法，请求发送至根路径，请求体为JSON格式的KV内容，示例如下：
+         1. ```Bash
+            curl -XPOST -H "Content-type: application/json" http://server1/ -d '{"myname": "电子科技大学@2024"}'
+            curl -XPOST -H "Content-type: application/json" http://server2/ -d '{"tasks": ["task 1", "task 2", "task 3"]}'
+            curl -XPOST -H "Content-type: application/json" http://server3/ -d '{"age": 123}'
+            ```
+      3. 读取缓存 `GET /{key}`。使用HTTP GET方法，`key`直接拼接在根路径之后。为简化程序，对`key`格式不做要求（非URL安全字符需要进行urlencode）。
+         1. 正常：返回HTTP 200，body为JSON格式的KV结果；
+         2. 错误：返回HTTP 404，body为空。
+      4. ```Bash
+         curl http://server2/myname
+         {"myname": "电子科技大学@2024"}
+         
+         curl http://server1/tasks
+         {"tasks": ["task 1", "task 2", "task 3"]}
+         
+         curl http://server1/notexistkey
+         # 404, not found
+         ```
+
+      5. 删除缓存 DELETE /`{key}`。永远返回HTTP 200，body为删除的数量。
+      6. ```Bash
+         curl -XDELETE http://server3/myname
+         1
+         
+         curl http://server1/myname
+         # 404, not found
+         
+         curl -XDELETE http://server3/myname
+         0
+         ```
+3. 提交 & 测试
+   1. 提交内容：`实验报告`和`程序代码包`（**合并一个zip**）
+   2. 实验报告：描述系统设计和实现，突出重点；
+   3. 程序代码包：
+      1. 不限语言，提交程序源代码。**仅限源代码**，不得包括VCS目录（如`.git`等），动态拉取的第三方包（如`node_modules`、`.venv`等），编译中间文件（如`.o`），最终可执行文件等。如果打包后有几十兆甚至更大，大概率包含了不该有的内容。
+      2. 程序**必须**基于docker打包，并通过docker compose启动运行（每个cache server为一个docker实例）；
+         1. `Dockerfile`：保证执行docker build可构建成功（**会作为评分依据**）。为了减少批改作业时构建docker镜像数据传输量，请统一使用`ubuntu:20.04`为基础镜像（如下）。
+            1. Note 1：自今年起国内镜像源基本都不可用。
+            2. Note 2：尽量使用`apt install`安装依赖包（如`grpc`），避免手动下载、编译。
+         2. ```Dockerfile
+            FROM ubuntu:20.04
+            # add your own codes
+            
+            # start your application, one docker one cache server
+            # ENTRYPOINT []
+            ```
+
+         3. `compose.yaml`：能直接启动不少于规定数量的cache server。每个server将内部HTTP服务端口映射至Host，外部端口从**`9527`**递增，即若启动3个server，则通过`http://127.0.0.1:9527`，`http://127.0.0.1:9528`，`http://127.0.0.1:9529`可分别访问3个cache server。
+         4. [测试脚本](https://github.com/ruini-classes/sdcs-testsuit)。批改作业会执行此测试脚本，也欢迎各位同学提PR，完善测试覆盖。
+
+
+
+
+
+
+
+# 准备
+
+* docker
+* grpc
+* js-proj
+
+
+
+### 规划
+
+* 实现
+  * server端
+    * cache server
+    * docker compose部署 
+    * server之间用RPC连接
+    * 那么每个server都需要起一个http server用以接收client，一个gRPC server用以接收RPC调用
+    * gRPC统一实现？每个Server创建实例？
+  * client端
+    * 无需，就是发请求而已，test unit
+* server端http server
+  * 接收client请求 
+  * 实现新增、更新、修改、删除功能
+  * 回应之
+* server端rpc server
+  * 其它server rpc请求 
+  * 实现rpc基本功能，核心就是对本身维护的cache kv队列的维护与修改
+* 核心细节
+  * 数据存储格式选择
+    * JSON（简单子，http那边就是返回JSON
+    * protocol buffers（高性能，但有使用门槛，先用JSON吧后期优化
+  * 分布策略
+    * round-robin还是hash
+    * round-robin是否是维护一个表，一次放置？
+    * hash是否是将相关kv值映射后决定在哪个node？
+  * client接入与实际查询数据的node并非同一个怎么解决
+    * 内部发起RPC拿到值并返回
+    * idea1：那就是每个node维护一张全局的表？而后进行查找？（时间up空间down
+    * idea2：挨个查找？（时间down空间up
+  * 一些一致性算法是否需要实现？
+
+
+
+# RPC-part
+
+* client
+  * http层面检验hash分布
+  * 因此client部分只做简单远程存储与查询
+* server
+  * 存储传入的data即可，hash判断交给http层面
