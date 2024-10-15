@@ -18,7 +18,7 @@ const calcCacheNode = (key) => {
             targetNode = 3
     }
 
-    return targetNode
+    return targetNode - 1
 }
 
 export default calcCacheNode

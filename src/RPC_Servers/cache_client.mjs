@@ -29,21 +29,33 @@ const getTargetChannel = (targetNode) => {
 
 const updateData = (newData,targetNode) => {
     const client = getTargetChannel(targetNode)
-    const curDataCnt = client.updateData(newData)
+    const curDataCnt = -1
+    client.updateData({KV_value: JSON.stringify(newData)},(err, res) => {
+        if(err) console.error(err)
+        else curDataCnt = res
+    })
 
     return curDataCnt
 }
 
 const getData = (targetKey, targetNode) => {
     const client = getTargetChannel(targetNode)
-    const targetData =  client.getData(targetKey)
+    let targetData = {}
+    client.getData({ K_value: targetKey },(err, res) => {
+        if(err) console.error(err)
+        else targetData = JSON.parse(res)
+    })
 
     return targetData
 }
 
 const deleteData = (deleteKey, targetNode) => {
     const client = getTargetChannel(targetNode)
-    const deleteCnt = client.deleteData(deleteKey)
+    let deleteCnt = -1
+    client.deleteData({K_value:deleteKey}, (err,res) => {
+        if(err) console.error(err)
+        else deleteCnt = res
+    })
 
     return deleteCnt
 }

@@ -55,6 +55,4 @@ const startHttpServer = (port) => {
     })
 }
 
-export {
-    startHttpServer,
-}
+export default startHttpServer

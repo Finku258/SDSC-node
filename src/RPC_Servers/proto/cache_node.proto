@@ -3,34 +3,34 @@ syntax = "proto3";
 package sdsc_node;
 
 service SDSC_Node {
-    rpc updateData (UpdateDataReq) returns {UpdateDataRes}
+    rpc updateData (UpdateDataReq) returns (UpdateDataRes) {}
 
-    rpc getData (GetDataReq) returns {GetDataRes}
+    rpc getData (GetDataReq) returns (GetDataRes) {}
 
-    rpc deleteData (DeleteDataReq) returns {DeleteDataRes}
+    rpc deleteData (DeleteDataReq) returns (DeleteDataRes) {}
 };
 
 message UpdateDataReq {
-    string KV_value = 1
+    string KV_value = 1;
 };
 
 message UpdateDataRes {
-    uint32 updateNum = 1
+    uint32 updateNum = 1;
 };
 
 message GetDataReq {
-    string K_value = 1
+    string K_value = 1;
 };
 
 message GetDataRes {
-    string KV_value = 1
+    string KV_value = 1;
 };
 
 message DeleteDataReq {
-    string K_value = 1
+    string K_value = 1;
 };
 
 message DeleteDataRes {
-    uint32 deleteNum = 1
+    uint32 deleteNum = 1;
 };
 

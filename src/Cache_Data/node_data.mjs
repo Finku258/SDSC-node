@@ -1,5 +1,5 @@
-import { updateDataRemote, getDataRemote, deleteDataRemote } from "../RPC_Servers/cache_client"
-import calcCacheNode from "../utils/hashCacheMapper"
+import { updateDataRemote, getDataRemote, deleteDataRemote } from "../RPC_Servers/cache_client.mjs"
+import calcCacheNode from "../utils/hashCacheMapper.mjs"
 
 /**
  * 节点信息
@@ -18,31 +18,29 @@ const cache_data = {
 /**
  * 更新数据
  */
-const updateData = async (newData) => {
+const updateData = (newData) => {
     const key = Object.keys(newData)[0]
     const targetNodeId = calcCacheNode(key)
-    if(targetNodeId === NODE_ID){
+    if(targetNodeId + 1 === NODE_ID){
         cache_data.dataObj = {...cache_data.dataObj,...newData}
         cache_data.dataCnt = Object.keys(cache_data.dataObj).length
     }else{
-        cache_data.dataCnt = await updateDataRemote(newData, NODE_LIST[targetNodeId])
+        cache_data.dataCnt = updateDataRemote(newData, NODE_LIST[targetNodeId])
     }
-    printData()
     return cache_data.dataCnt
 }
 
 /**
  * 查询数据
  */
-const searchData = async (key) => {
-    const key = Object.keys(newData)[0]
+const searchData = (key) => {
     const targetNodeId = calcCacheNode(key)
     if(targetNodeId === NODE_ID){
         return cache_data.dataObj.hasOwnProperty(key) 
             ? { [key]: cache_data.dataObj[key] } 
             : null
     }else{
-        return await getDataRemote(key, NODE_LIST[targetNodeId])
+        return getDataRemote(key, NODE_LIST[targetNodeId])
     }
 }
 
@@ -50,7 +48,6 @@ const searchData = async (key) => {
  * 删除数据
  */
 const deleteData = async (key) => {
-    const key = Object.keys(newData)[0]
     const targetNodeId = calcCacheNode(key)
 
     if(targetNodeId === NODE_ID){
@@ -58,7 +55,6 @@ const deleteData = async (key) => {
             const curDataCnt = cache_data.dataCnt
             delete cache_data.dataObj[key]
             cache_data.dataCnt = Object.keys(cache_data.dataObj).length
-            printData()
             return curDataCnt - cache_data.dataCnt
         }
         return 0

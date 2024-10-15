@@ -25,7 +25,7 @@ const node_proto = grpc.loadPackageDefinition(packageDefinition).sdsc_node
  * implement rpc methods
  */
 const updateDataRPC = (call) => {
-    const newData = call.request
+    const newData = JSON.parse(call.request.KV_value)
     const curDataCnt = updateData(newData)
 
     return curDataCnt
@@ -35,7 +35,7 @@ const getDataRPC = (call) => {
     const targetKey = call.request
     const targetData = searchData(targetKey)
 
-    return targetData
+    return JSON.stringify(targetData)
 }
 
 const deleteDataRPC = (call) => {

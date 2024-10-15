@@ -1,18 +1,24 @@
 # 使用 Ubuntu 22.04 作为基础镜像
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 # 设置非交互模式，避免一些软件包安装时出现交互提示
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 替换apt-get镜像源
-COPY ./source.list /etc/apt/
+# COPY ./sources.list /etc/apt/
 
-# 安装Node.js
-RUN apt-get update -y \
-    && apt-get install -y curl build-essential \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - \
-    && apt-get install -y nodejs \
+RUN apt-get update -y
 
+RUN apt-get install curl -y
+
+# RUN apt-get remove -y nodejs
+
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+
+# 添加 Node.js 20.x 的官方仓库并安装 Node.js 20 和 npm
+RUN apt-get install -y nodejs 
+# RUN apt-get install -y npm
+    
 # 设置工作目录为 /app
 WORKDIR /app
 
@@ -29,5 +35,5 @@ COPY ./src ./src
 # 设置环境变量（可根据需要调整）
 ENV NODE_ENV=production
 
-# 启动 Node.js 服务器
-CMD ["node", "src/index.js"]
+# 启动 Node.js 服务
+CMD ["node", "src/index.mjs"]
