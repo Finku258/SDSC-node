@@ -1,5 +1,6 @@
-import { updateDataRemote, getDataRemote, deleteDataRemote } from "../RPC_Servers/cache_client.mjs"
+import { updateDataClient, getDataClient, deleteDataClient } from "../RPC_Servers/cache_client.mjs"
 import calcCacheNode from "../utils/hashCacheMapper.mjs"
+import Logger from '../utils/logger.mjs'
 
 /**
  * 节点信息
@@ -18,54 +19,69 @@ const cache_data = {
 /**
  * 更新数据
  */
-const updateData = (newData) => {
-    const key = Object.keys(newData)[0]
-    const targetNodeId = calcCacheNode(key)
-    if(targetNodeId + 1 === NODE_ID){
-        cache_data.dataObj = {...cache_data.dataObj,...newData}
-        cache_data.dataCnt = Object.keys(cache_data.dataObj).length
-    }else{
-        cache_data.dataCnt = updateDataRemote(newData, NODE_LIST[targetNodeId])
-    }
+const storeNewData = (newData) => {
+    cache_data.dataObj = {...cache_data.dataObj,...newData}
+    cache_data.dataCnt = Object.keys(cache_data.dataObj).length
+    Logger.info(`storeData: ${JSON.stringify(cache_data.dataObj)}`)
     return cache_data.dataCnt
 }
+const updateData = async (newData) => {
+    const key = Object.keys(newData)[0]
+    const targetNodeId = calcCacheNode(key)
+    let updateDataCnt = 0
 
+    if(targetNodeId + 1 === NODE_ID){
+        storeNewData(newData)
+    }else{
+        updateDataCnt = await updateDataClient(newData, NODE_LIST[targetNodeId])
+    }
+    return updateDataCnt
+}
 /**
  * 查询数据
  */
-const searchData = (key) => {
-    const targetNodeId = calcCacheNode(key)
-    if(targetNodeId === NODE_ID){
-        return cache_data.dataObj.hasOwnProperty(key) 
+const retrieveData = (key) => {
+    return cache_data.dataObj.hasOwnProperty(key) 
             ? { [key]: cache_data.dataObj[key] } 
-            : null
+            : null 
+}
+const searchData = async (key) => {
+    const targetNodeId = calcCacheNode(key)
+    if(targetNodeId + 1 === NODE_ID){
+        return retrieveData(key)
     }else{
-        return getDataRemote(key, NODE_LIST[targetNodeId])
+        return await getDataClient(key, NODE_LIST[targetNodeId])
     }
 }
 
 /**
  * 删除数据
  */
+const deleteTargetData = (key) => {
+    const curDataCnt = cache_data.dataCnt
+    delete cache_data.dataObj[key]
+    cache_data.dataCnt = Object.keys(cache_data.dataObj).length
+    return curDataCnt - cache_data.dataCnt
+}
 const deleteData = async (key) => {
     const targetNodeId = calcCacheNode(key)
 
-    if(targetNodeId === NODE_ID){
+    if(targetNodeId + 1 === NODE_ID){
         if(cache_data.dataObj.hasOwnProperty(key)){
-            const curDataCnt = cache_data.dataCnt
-            delete cache_data.dataObj[key]
-            cache_data.dataCnt = Object.keys(cache_data.dataObj).length
-            return curDataCnt - cache_data.dataCnt
+            return deleteTargetData(key)
         }
         return 0
     }else{
-        return await deleteDataRemote(key, NODE_ID[targetNodeId])
+        return await deleteDataClient(key, NODE_LIST[targetNodeId])
     }
 }
 
 export {
     cache_data as CacheData,
     updateData,
+    storeNewData,
     searchData,
+    retrieveData,
+    deleteTargetData,
     deleteData
 }

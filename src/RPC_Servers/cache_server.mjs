@@ -2,7 +2,7 @@ import grpc from '@grpc/grpc-js'
 import protoLoader from '@grpc/proto-loader'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { updateData, searchData, deleteData } from '../Cache_Data/node_data.mjs'
+import { storeNewData, retrieveData, deleteTargetData } from '../Cache_Data/node_data.mjs'
 
 /**
  * init gRPC package
@@ -24,25 +24,25 @@ const node_proto = grpc.loadPackageDefinition(packageDefinition).sdsc_node
 /**
  * implement rpc methods
  */
-const updateDataRPC = (call) => {
+const updateDataRPC = (call, callback) => {
     const newData = JSON.parse(call.request.KV_value)
-    const curDataCnt = updateData(newData)
+    const curDataCnt = storeNewData(newData)
 
-    return curDataCnt
+    callback(null, { updateNum: curDataCnt })
 }
 
-const getDataRPC = (call) => {
-    const targetKey = call.request
-    const targetData = searchData(targetKey)
+const getDataRPC = (call, callback) => {
+    const targetKey = call.request.K_value
+    const targetData = retrieveData(targetKey)
 
-    return JSON.stringify(targetData)
+    callback(null, { KV_value: JSON.stringify(targetData) })
 }
 
-const deleteDataRPC = (call) => {
-    const deleteKey = call.request
-    const deleteCnt = deleteData(deleteKey)
+const deleteDataRPC = (call,callback) => {
+    const deleteKey = call.request.K_value
+    const deleteCnt = deleteTargetData(deleteKey)
 
-    return deleteCnt
+    callback(null, { deleteNum: deleteCnt })
 }
 
 /**
@@ -53,7 +53,7 @@ const startRpcServer = (port) => {
     server.addService(node_proto.SDSC_Node.service, {
         updateData: updateDataRPC,
         getData: getDataRPC,
-        deleteDatta: deleteDataRPC
+        deleteData: deleteDataRPC
     })
     server.bindAsync('0.0.0.0:10260', grpc.ServerCredentials.createInsecure(), (err,port) => {
         if(err != null) {

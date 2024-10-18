@@ -72,4 +72,5 @@ class Logger {
     }
 }
 
-export default new Logger('error')
+const logger = new Logger('error')
+export default logger

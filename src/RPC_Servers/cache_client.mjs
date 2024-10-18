@@ -2,6 +2,7 @@ import grpc from '@grpc/grpc-js'
 import protoLoader from '@grpc/proto-loader'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import logger from '../utils/logger.mjs'
 
 /**
  * init gRPC package
@@ -27,41 +28,56 @@ const getTargetChannel = (targetNode) => {
     return new node_proto.SDSC_Node(targetNode,grpc.credentials.createInsecure())
 }
 
-const updateData = (newData,targetNode) => {
+const updateDataClient = async (newData,targetNode) => {
     const client = getTargetChannel(targetNode)
-    const curDataCnt = -1
-    client.updateData({KV_value: JSON.stringify(newData)},(err, res) => {
-        if(err) console.error(err)
-        else curDataCnt = res
+    const curDataCnt = await new Promise((resolve, reject) => {
+        client.updateData({KV_value: JSON.stringify(newData)},(err, res) => {
+            if(err){
+                console.error(err)
+                reject(err)
+            }else{
+                resolve(res.updateNum)
+            }
+        })
     })
 
     return curDataCnt
 }
 
-const getData = (targetKey, targetNode) => {
+const getDataClient = async (targetKey, targetNode) => {
     const client = getTargetChannel(targetNode)
-    let targetData = {}
-    client.getData({ K_value: targetKey },(err, res) => {
-        if(err) console.error(err)
-        else targetData = JSON.parse(res)
+    const targetData = await new Promise((resolve, reject) => {
+        client.getData({ K_value: targetKey },(err, res) => {
+            if(err){
+                logger.error(err)
+                reject(err)
+            }else{
+                resolve(res.KV_value)
+            }
+        })
     })
 
-    return targetData
+    return JSON.parse(targetData)
 }
 
-const deleteData = (deleteKey, targetNode) => {
+const deleteDataClient = async (deleteKey, targetNode) => {
     const client = getTargetChannel(targetNode)
-    let deleteCnt = -1
-    client.deleteData({K_value:deleteKey}, (err,res) => {
-        if(err) console.error(err)
-        else deleteCnt = res
+    const deleteCnt = await new Promise((resolve, reject) => {
+        client.deleteData({K_value:deleteKey}, (err,res) => {
+            if(err){
+                console.error(err)
+                reject(err)
+            }else{
+                resolve(res.deleteNum)
+            }
+        })
     })
 
     return deleteCnt
 }
 
 export {
-    updateData as updateDataRemote,
-    getData as getDataRemote,
-    deleteData as deleteDataRemote
+    updateDataClient,
+    getDataClient,
+    deleteDataClient
 }

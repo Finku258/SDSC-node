@@ -9,10 +9,10 @@ app.use(express.json());
  * SearchData Interface
  * param: key
  */
-app.get('/:key', (req,res) => {
+app.get('/:key', async (req,res) => {
     const searchKey = req.params
     if(Object.keys(searchKey).length !== 0){
-        const targetData = searchData(searchKey.key)
+        const targetData = await searchData(searchKey.key)
         targetData
             ? res.status(200).json(targetData)
             : res.status(404).end()
@@ -25,10 +25,10 @@ app.get('/:key', (req,res) => {
  * UpdateData Interface
  * body: { k:v }
  */
-app.post('/',(req,res) => {
+app.post('/', async (req,res) => {
     const newData = req.body
     if(Object.keys(newData).length !== 0){
-        const updateCnt = updateData(newData)
+        const updateCnt = await updateData(newData)
         res.status(200).send(`Succeesfully update data count: ${updateCnt}`)
     }else{
         res.status(400).send('Bad Request: Missing or invalid data')
@@ -39,10 +39,10 @@ app.post('/',(req,res) => {
  * DeleteData Interface
  * param: key
  */
-app.delete('/:key', (req,res) => {
+app.delete('/:key', async (req,res) => {
     const deleteKey = req.params
     if(deleteKey.key){
-        const deleteCnt = deleteData(deleteKey.key)
+        const deleteCnt = await deleteData(deleteKey.key)
         res.status(200).send(`${deleteCnt}`)
     }else{
         res.status(400).send('Bad Request: Missing or invalid data')
