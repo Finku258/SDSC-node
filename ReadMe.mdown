@@ -118,3 +118,21 @@
   * 因此client部分只做简单远程存储与查询
 * server
   * 存储传入的data即可，hash判断交给http层面
+
+
+
+### 已通过测试
+
+```sh
+megumin:~/sdcs-test$ ./sdcs-test.sh 3
+test_set ...... PASS
+test_get ...... PASS
+test_set again ...... PASS
+test_delete ...... PASS
+test_get_after_delete ...... PASS
+test_delete_after_delete ...... PASS
+======================================
+Run 6 tests in 78.307 seconds.
+6 passed, 0 failed.
+```
+
